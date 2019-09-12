@@ -18,7 +18,54 @@ import pandas as pd
 import bokeh
 from bokeh.io import show, output_notebook, output_file
 from bokeh.plotting import figure
-# %autosave 0
+from bokeh.models import HoverTool
+from bokeh.transform import linear_cmap
+from bokeh.util.hex import hexbin
+```
+
+```{python}
+# Loading the .csv data
+data = pd.read_csv('../basic-statistics.csv', index_col=0)
+```
+
+```{python}
+my_count = data.nick.count()
+```
+
+```{python}
+output_file('test.html')
+```
+
+```{python}
+hover = HoverTool(tooltips=[('x', "$x"), ('y', '$y')])
+
+my_x = data.deaths
+my_y = data.kills
+
+bins = hexbin(my_x, my_y, 0.5)
+
+p = figure(title='Sample from: '+str(my_count)+' data points (Players in games)',
+           x_axis_label='rating', 
+           y_axis_label='kills',
+           tools="wheel_zoom,pan,reset",
+           match_aspect=True,
+           background_fill_color='#440154',
+           plot_width=800,
+           plot_height=800)
+p.grid.visible = False
+
+p.hex_tile(q="q", r="r", size=0.5, line_color=None, source=bins,
+           fill_color=linear_cmap('counts', 'Viridis256', 0, max(bins.counts)))
+
+#p.hexbin(my_x, my_y, size=0.5, alpha=0.2)
+p.add_tools(hover)
+
+
+show(p)
+```
+
+```{python}
+bins.counts
 ```
 
 ```{python}
