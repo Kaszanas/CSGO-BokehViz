@@ -16,11 +16,15 @@ jupyter:
 import sqlalchemy
 import pandas as pd
 import bokeh
-from bokeh.io import show, output_notebook, output_file
+import holoviews as hv
+from bokeh.io import show, output_notebook, output_file, save
 from bokeh.plotting import figure
 from bokeh.models import HoverTool
 from bokeh.transform import linear_cmap
 from bokeh.util.hex import hexbin
+from holoviews import opts
+import numpy as np
+hv.extension('bokeh')
 ```
 
 ```{python}
@@ -34,6 +38,79 @@ my_count = data.nick.count()
 
 ```{python}
 output_file('test.html')
+```
+
+```{python}
+my_x = data.deaths
+my_y = data.kills
+
+
+array = pd.concat([my_x, my_y], axis=1)
+```
+
+```{python}
+my_x.mean()
+```
+
+```{python}
+hv.help(hv.Bivariate)
+```
+
+```{python}
+array.values
+```
+
+```{python}
+renderer = hv.renderer('bokeh')
+```
+
+```{python}
+bivariate = hv.Bivariate(array.values)
+bivariate.opts(title='Sample from: '+str(my_count)+' data points (Players in games)',
+               xlabel='deaths',
+               ylabel='kills',
+               frame_width=800,
+               frame_height=800,
+               filled=True,
+               cmap='Plasma',
+               colorbar=True)
+
+hover = HoverTool(tooltips=[('x', "$x"), ('y', '$y')])
+
+my_x = data.deaths
+my_y = data.kills
+```
+
+```{python}
+plot = renderer.get_plot(bivariate).state
+plot.add_tools(hover)
+
+save(plot, 'BivariateDistribution.html')
+```
+
+```{python}
+hover = HoverTool(tooltips=[('x', "$x"), ('y', '$y')])
+
+my_x = data.deaths
+my_y = data.kills
+
+p = figure(title='Sample from: '+str(my_count)+' data points (Players in games)',
+           x_axis_label='rating', 
+           y_axis_label='kills',
+           tools="wheel_zoom,pan,reset",
+           match_aspect=True,
+           background_fill_color='#440154',
+           plot_width=800,
+           plot_height=800)
+p.grid.visible = False
+
+p.circle()
+
+#p.hexbin(my_x, my_y, size=0.5, alpha=0.2)
+p.add_tools(hover)
+
+
+show(p)
 ```
 
 ```{python}
@@ -56,18 +133,4 @@ p.grid.visible = False
 
 p.hex_tile(q="q", r="r", size=0.5, line_color=None, source=bins,
            fill_color=linear_cmap('counts', 'Viridis256', 0, max(bins.counts)))
-
-#p.hexbin(my_x, my_y, size=0.5, alpha=0.2)
-p.add_tools(hover)
-
-
-show(p)
-```
-
-```{python}
-bins.counts
-```
-
-```{python}
-
 ```
